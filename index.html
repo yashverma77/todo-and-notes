@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Productivity Hub: Todo & Notes</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link rel="icon" href="11.png" type="image/x-icon">
+
+    <style>
+      :root {
+            --bg-primary: #f4f4f4;
+            --bg-secondary: #ffffff;
+            --text-primary: #333;
+            --accent-color: #4CAF50;
+            --accent-hover: #45a049;
+        }
+
+
+        /* Dark Theme Styles */
+        .dark-theme {
+            --bg-primary: #121212;
+            --bg-secondary: #1E1E1E;
+            --text-primary: #E0E0E0;
+            --accent-color: #BB86FC;
+            --accent-hover: #9A67D3;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+        }
+
+        /* Navbar Styles */
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-secondary);
+            padding: 15px 30px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .nav-icons {
+            display: flex;
+            gap: 15px;
+        }
+
+        .nav-icons i {
+            cursor: pointer;
+            font-size: 1.2rem;
+            color: var(--text-primary);
+        }
+
+        /* Container Styles */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+
+        /* Shared Styles for Todo and Notes */
+        .todo-section, .notes-section {
+            background-color: var(--bg-secondary);
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .input-container {
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .input-container input {
+            flex-grow: 1;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-right: 10px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .input-container select {
+            margin-right: 10px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+        }
+
+        .btn {
+            padding: 10px 15px;
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn:hover {
+            background-color: var(--accent-hover);
+        }
+
+        /* Todo List Styles */
+        #todoList, #notesList {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-primary);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .item.completed {
+            opacity: 0.6;
+            text-decoration: line-through;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .item-actions i {
+            cursor: pointer;
+            color: var(--text-primary);
+        }
+
+        /* Footer Styles */
+        .footer {
+            background-color: var(--bg-secondary);
+            padding: 20px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .social-icons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-top: 15px;
+        }
+
+        .social-icons i {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: color 0.3s;
+        }
+
+        .social-icons i:hover {
+            color: var(--accent-color);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* ... (previous CSS remains the same) ... */
+        
+        /* Additional styles for clear buttons */
+        .clear-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        .clear-buttons .btn {
+            background-color: #f44336;
+            margin-right: 10px;
+        }
+
+        .clear-buttons .btn:hover {
+            background-color: #d32f2f;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navbar -->
+    <nav class="navbar">
+        <div class="navbar-brand">
+            <i class="fas fa-tasks"></i> Productivity Hub
+        </div>
+        <div class="nav-icons">
+            <i id="themeToggle" class="fas fa-moon"></i>
+            <i class="fas fa-sync" id="syncData"></i>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Todo Section -->
+        <div class="todo-section">
+            <h2><i class="fas fa-check-square"></i> Todo List</h2>
+            <div class="input-container">
+                <input type="text" id="todoInput" placeholder="Enter a new task" required>
+                <select id="todoPriority" required>
+                    <option value="">Select Priority</option>
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                </select>
+                <button class="btn" id="addTodoBtn">Add Task</button>
+            </div>
+            <div>
+                <button class="btn" id="sortTodos">Sort Tasks</button>
+                <ul id="todoList"></ul>
+                <div class="clear-buttons">
+                    <button class="btn" id="clearCompletedTodos">Clear Completed</button>
+                    <button class="btn" id="clearAllTodos">Clear All Tasks</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Notes Section -->
+        <div class="notes-section">
+            <h2><i class="fas fa-sticky-note"></i> Notes</h2>
+            <div class="input-container">
+                <input type="text" id="noteTitleInput" placeholder="Note Title" required>
+                <input type="text" id="noteContentInput" placeholder="Note Content" required>
+                <button class="btn" id="addNoteBtn">Add Note</button>
+            </div>
+            <ul id="notesList"></ul>
+            <div class="clear-buttons">
+                <button class="btn" id="clearAllNotes">Clear All Notes</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2024 <span class="highlight">Productivity Hub</span>. All rights reserved.</p>
+        <p class="cta">Follow us for updates and inspiration:</p>
+        <div class="social-icons">
+            <a href="https://github.com/yashverma77/" target="_blank" title="GitHub">
+                <i class="fab fa-github"></i>
+            </a>
+            <a href="https://linkedin.com/in/yash-verma-618639299" target="_blank" title="LinkedIn">
+                <i class="fab fa-linkedin"></i>
+            </a>
+            <a href="https://twitter.com/yashverma77" target="_blank" title="Twitter">
+                <i class="fab fa-twitter"></i>
+            </a>
+            <a href="https://www.instagram.com/yashverma_007/" target="_blank" title="Instagram">
+                <i class="fab fa-instagram"></i>
+            </a>
+        </div>
+    </footer>
+    
+
+    <script>
+          // Task Class
+class Task {
+    constructor(title, priority = 'medium') {
+        this.id = Date.now();
+        this.title = title;
+        this.priority = priority;
+        this.isComplete = false;
+        this.createdAt = new Date();
+    }
+
+    toggleComplete() {
+        this.isComplete = !this.isComplete;
+    }
+}
+
+// Note Class
+class Note {
+    constructor(title, content) {
+        this.id = Date.now();
+        this.title = title;
+        this.content = content;
+        this.createdAt = new Date();
+    }
+}
+
+// Productivity App Class
+class ProductivityApp {
+    constructor() {
+        // Initialize arrays for tasks and notes
+        this.tasks = [];
+        this.notes = [];
+
+        // DOM Elements
+        this.todoInput = document.getElementById('todoInput');
+        this.todoPriority = document.getElementById('todoPriority');
+        this.addTodoBtn = document.getElementById('addTodoBtn');
+        this.todoList = document.getElementById('todoList');
+        this.sortTodosBtn = document.getElementById('sortTodos');
+        this.clearCompletedTodosBtn = document.getElementById('clearCompletedTodos');
+        this.clearAllTodosBtn = document.getElementById('clearAllTodos');
+
+        this.noteTitleInput = document.getElementById('noteTitleInput');
+        this.noteContentInput = document.getElementById('noteContentInput');
+        this.addNoteBtn = document.getElementById('addNoteBtn');
+        this.notesList = document.getElementById('notesList');
+        this.clearAllNotesBtn = document.getElementById('clearAllNotes');
+
+        this.themeToggle = document.getElementById('themeToggle');
+        this.syncDataBtn = document.getElementById('syncData');
+
+        // Initialize app
+        this.loadData();
+        this.setupEventListeners();
+        this.setupThemeToggle();
+        this.setupEnterKeyListeners();
+    }
+
+    // Local Storage Methods
+    saveData() {
+        localStorage.setItem('tasks', JSON.stringify(this.tasks));
+        localStorage.setItem('notes', JSON.stringify(this.notes));
+    }
+
+    loadData() {
+        const savedTasks = JSON.parse(localStorage.getItem('tasks') || '[]');
+        const savedNotes = JSON.parse(localStorage.getItem('notes') || '[]');
+
+        // Reconstruct task objects
+        this.tasks = savedTasks.map(taskData => {
+            const task = new Task(taskData.title, taskData.priority);
+            task.id = taskData.id;
+            task.isComplete = taskData.isComplete;
+            task.createdAt = new Date(taskData.createdAt);
+            return task;
+        });
+
+        // Reconstruct note objects
+        this.notes = savedNotes.map(noteData => {
+            const note = new Note(noteData.title, noteData.content);
+            note.id = noteData.id;
+            note.createdAt = new Date(noteData.createdAt);
+            return note;
+        });
+
+        // Render tasks and notes
+        this.renderTasks();
+        this.renderNotes();
+    }
+
+    // Event Listeners Setup
+    setupEventListeners() {
+        // Todo Event Listeners
+        this.addTodoBtn.addEventListener('click', () => this.addTask());
+        this.sortTodosBtn.addEventListener('click', () => this.sortTasks());
+        this.clearCompletedTodosBtn.addEventListener('click', () => this.clearCompletedTodos());
+        this.clearAllTodosBtn.addEventListener('click', () => this.clearAllTodos());
+
+        // Notes Event Listeners
+        this.addNoteBtn.addEventListener('click', () => this.addNote());
+        this.clearAllNotesBtn.addEventListener('click', () => this.clearAllNotes());
+
+        // Theme and Sync
+        this.syncDataBtn.addEventListener('click', () => this.syncData());
+    }
+
+    // Enter Key Listeners
+    setupEnterKeyListeners() {
+        // Todo Enter Key Listener
+        this.todoInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.addTask();
+            }
+        });
+
+        this.todoPriority.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.addTask();
+            }
+        });
+
+        // Notes Enter Key Listeners
+        this.noteTitleInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.addNote();
+            }
+        });
+
+        this.noteContentInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                this.addNote();
+            }
+        });
+    }
+
+    // Theme Toggle Method
+    setupThemeToggle() {
+        const savedTheme = localStorage.getItem('theme');
+        
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-theme');
+            this.themeToggle.classList.replace('fa-moon', 'fa-sun');
+        }
+
+        this.themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-theme');
+            
+            if (document.body.classList.contains('dark-theme')) {
+                this.themeToggle.classList.replace('fa-moon', 'fa-sun');
+                localStorage.setItem('theme', 'dark');
+            } else {
+                this.themeToggle.classList.replace('fa-sun', 'fa-moon');
+                localStorage.setItem('theme', 'light');
+            }
+        });
+    }
+
+    // Task Management Methods
+    addTask() {
+        const title = this.todoInput.value.trim();
+        const priority = this.todoPriority.value;
+
+        // Validate inputs
+        if (!title || !priority) {
+            alert('Please enter a task and select a priority.');
+            return;
+        }
+
+        const newTask = new Task(title, priority);
+        this.tasks.push(newTask);
+        
+        // Reset inputs
+        this.todoInput.value = '';
+        this.todoPriority.value = '';
+
+        // Render and save
+        this.renderTasks();
+        this.saveData();
+    }
+
+    deleteTask(taskId) {
+        this.tasks = this.tasks.filter(task => task.id !== taskId);
+        this.renderTasks();
+        this.saveData();
+    }
+
+    toggleTaskCompletion(taskId) {
+        const task = this.tasks.find(task => task.id === taskId);
+        if (task) {
+            task.toggleComplete();
+            this.renderTasks();
+            this.saveData();
+        }
+    }
+
+    editTask(taskId, newTitle) {
+        const task = this.tasks.find(task => task.id === taskId);
+        if (task) {
+            task.title = newTitle;
+            this.renderTasks();
+            this.saveData();
+        }
+    }
+
+    sortTasks() {
+        this.tasks.sort((a, b) => {
+            const priorityOrder = { 'high': 3, 'medium': 2, 'low': 1 };
+            const priorityComparison = priorityOrder[b.priority] - priorityOrder[a.priority];
+            
+            if (priorityComparison !== 0) return priorityComparison;
+            
+            return b.createdAt - a.createdAt;
+        });
+        this.renderTasks();
+    }
+
+    clearCompletedTodos() {
+        this.tasks = this.tasks.filter(task => !task.isComplete);
+        this.renderTasks();
+        this.saveData();
+    }
+
+    clearAllTodos() {
+        this.tasks = [];
+        this.renderTasks();
+        this.saveData();
+    }
+
+    renderTasks() {
+        this.todoList.innerHTML = '';
+
+        this.tasks.forEach(task => {
+            const li = document.createElement('li');
+            li.classList.add('item');
+            if (task.isComplete) li.classList.add('completed');
+
+            li.innerHTML = `
+                <span>${task.title} (${task.priority})</span>
+                <div class="item-actions">
+                    <i class="fas fa-check complete-btn" data-id="${task.id}"></i>
+                    <i class="fas fa-edit edit-btn" data-id="${task.id}"></i>
+                    <i class="fas fa-trash delete-btn" data-id="${task.id}"></i>
+                </div>
+            `;
+
+            // Complete Task Listener
+            li.querySelector('.complete-btn').addEventListener('click', () => 
+                this.toggleTaskCompletion(task.id)
+            );
+
+            // Edit Task Listener
+            li.querySelector('.edit-btn').addEventListener('click', () => {
+                const newTitle = prompt('Edit task:', task.title);
+                if (newTitle !== null) this.editTask(task.id, newTitle);
+            });
+
+            // Delete Task Listener
+            li.querySelector('.delete-btn').addEventListener('click', () => 
+                this.deleteTask(task.id)
+            );
+
+            this.todoList.appendChild(li);
+        });
+    }
+
+    // Note Management Methods
+    addNote() {
+        const title = this.noteTitleInput.value.trim();
+        const content = this.noteContentInput.value.trim();
+
+        // Validate inputs
+        if (!title || !content) {
+            alert('Please enter both note title and content.');
+            return;
+        }
+
+        const newNote = new Note(title, content);
+        this.notes.push(newNote);
+        
+        // Reset inputs
+        this.noteTitleInput.value = '';
+        this.noteContentInput.value = '';
+
+        // Render and save
+        this.renderNotes();
+        this.saveData();
+    }
+
+    deleteNote(noteId) {
+        this.notes = this.notes.filter(note => note.id !== noteId);
+        this.renderNotes();
+        this.saveData();
+    }
+
+    editNote(noteId, newTitle, newContent) {
+        const note = this.notes.find(note => note.id === noteId);
+        if (note) {
+            note.title = newTitle;
+            note.content = newContent;
+            this.renderNotes();
+            this.saveData();
+        }
+    }
+
+    clearAllNotes() {
+        this.notes = [];
+        this.renderNotes();
+        this.saveData();
+    }
+
+    renderNotes() {
+        this.notesList.innerHTML = '';
+
+        this.notes.forEach(note => {
+            const li = document.createElement('li');
+            li.classList.add('item');
+
+            li.innerHTML = `
+                <div>
+                    <strong>${note.title}</strong>
+                    <p>${note.content}</p>
+                </div>
+                <div class="item-actions">
+                    <i class="fas fa-edit edit-btn" data-id="${note.id}"></i>
+                    <i class="fas fa-trash delete-btn" data-id="${note.id}"></i>
+                </div>
+            `;
+
+            // Edit Note Listener
+            li.querySelector('.edit-btn').addEventListener('click', () => {
+                const newTitle = prompt('Edit note title:', note.title);
+                const newContent = prompt('Edit note content:', note.content);
+                
+                if (newTitle !== null && newContent !== null) {
+                    this.editNote(note.id, newTitle, newContent);
+                }
+            });
+
+            // Delete Note Listener
+            li.querySelector('.delete-btn').addEventListener('click', () => 
+                this.deleteNote(note.id)
+            );
+
+            this.notesList.appendChild(li);
+        });
+    }
+
+    // Sync Data Method (Placeholder)
+    syncData() {
+        alert('Data is up to date!');
+        this.saveData();
+    }
+}
+
+// Initialize the Productivity App
+document.addEventListener('DOMContentLoaded', () => {
+    const productivityApp = new ProductivityApp();
+    
+    // Global error handling
+    window.addEventListener('error', (event) => {
+        console.error('Unhandled error:', event.error);
+        alert('An unexpected error occurred. Please try again.');
+    });
+});
+    </script>
+</body>
+</html>
