@@ -6,18 +6,17 @@
     <title>Productivity Hub: Todo & Notes</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="icon" href="11.png" type="image/x-icon">
-
+    
     <style>
-      :root {
+        :root {
             --bg-primary: #f4f4f4;
             --bg-secondary: #ffffff;
             --text-primary: #333;
             --accent-color: #4CAF50;
             --accent-hover: #45a049;
+            --completed-color: #888;
         }
-
 
         /* Dark Theme Styles */
         .dark-theme {
@@ -26,13 +25,14 @@
             --text-primary: #E0E0E0;
             --accent-color: #BB86FC;
             --accent-hover: #9A67D3;
+            --completed-color: #aaa;
         }
 
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            transition: background-color 0.3s, color 0.3s;
+            transition: all 0.3s ease;
         }
 
         body {
@@ -42,7 +42,44 @@
             line-height: 1.6;
         }
 
-        /* Navbar Styles */
+        /* Responsive Adjustments */
+        @media (max-width: 1200px) {
+            .container {
+                padding: 10px;
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                align-items: center;
+                padding: 10px;
+            }
+
+            .nav-icons {
+                margin-top: 10px;
+            }
+
+            .input-container {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .input-container input, 
+            .input-container select, 
+            .input-container button {
+                width: 100%;
+                margin-right: 0;
+            }
+
+            .clear-buttons {
+                flex-direction: column;
+                gap: 10px;
+            }
+        }
+
+        /* Existing styles remain the same as in the original code */
         .navbar {
             display: flex;
             justify-content: space-between;
@@ -128,33 +165,6 @@
             list-style-type: none;
             padding: 0;
         }
-
-        .item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            background-color: var(--bg-primary);
-            padding: 10px;
-            margin-bottom: 10px;
-            border-radius: 4px;
-        }
-
-        .item.completed {
-            opacity: 0.6;
-            text-decoration: line-through;
-        }
-
-        .item-actions {
-            display: flex;
-            gap: 10px;
-        }
-
-        .item-actions i {
-            cursor: pointer;
-            color: var(--text-primary);
-        }
-
-        /* Footer Styles */
         .footer {
             background-color: var(--bg-secondary);
             padding: 20px;
@@ -179,16 +189,6 @@
         .social-icons i:hover {
             color: var(--accent-color);
         }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .container {
-                grid-template-columns: 1fr;
-            }
-        }
-        /* ... (previous CSS remains the same) ... */
-        
-        /* Additional styles for clear buttons */
         .clear-buttons {
             display: flex;
             justify-content: space-between;
@@ -203,10 +203,70 @@
         .clear-buttons .btn:hover {
             background-color: #d32f2f;
         }
+
+        /* Enhanced Item Styles with Hover and Completion */
+        .item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background-color: var(--bg-primary);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            border: 1px solid transparent;
+        }
+
+        .item:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border-color: var(--accent-color);
+        }
+
+        .item.completed {
+            opacity: 0.7;
+            background-color: var(--bg-secondary);
+        }
+
+        .item.completed span, 
+        .item.completed p {
+            text-decoration: line-through;
+            color: var(--completed-color);
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 10px;
+            z-index: 10;
+            position: relative;
+        }
+
+        .complete-btn {
+            color: var(--accent-color);
+            transition: transform 0.3s ease;
+        }
+
+        .complete-btn:hover {
+            transform: scale(1.2) rotate(360deg);
+        }
+
+        .item-actions i {
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: color 0.3s ease;
+        }
+
+        .item-actions i:hover {
+            color: var(--accent-color);
+        }
+
+        /* Additional styles remain the same as in the original code */
+        /* ... (rest of the CSS remains unchanged) ... */
     </style>
 </head>
 <body>
-    <!-- Navbar -->
     <nav class="navbar">
         <div class="navbar-brand">
             <i class="fas fa-tasks"></i> Productivity Hub
@@ -276,10 +336,10 @@
             </a>
         </div>
     </footer>
+    <!-- Navbar and Container remain the same as in the original code -->
     
-
-    <script>
-          // Task Class
+<script>
+    // Task Class
 class Task {
     constructor(title, priority = 'medium') {
         this.id = Date.now();
@@ -300,7 +360,12 @@ class Note {
         this.id = Date.now();
         this.title = title;
         this.content = content;
+        this.isComplete = false;
         this.createdAt = new Date();
+    }
+
+    toggleComplete() {
+        this.isComplete = !this.isComplete;
     }
 }
 
@@ -359,6 +424,7 @@ class ProductivityApp {
         this.notes = savedNotes.map(noteData => {
             const note = new Note(noteData.title, noteData.content);
             note.id = noteData.id;
+            note.isComplete = noteData.isComplete || false;
             note.createdAt = new Date(noteData.createdAt);
             return note;
         });
@@ -572,6 +638,15 @@ class ProductivityApp {
         this.saveData();
     }
 
+    toggleNoteCompletion(noteId) {
+        const note = this.notes.find(note => note.id === noteId);
+        if (note) {
+            note.toggleComplete();
+            this.renderNotes();
+            this.saveData();
+        }
+    }
+
     editNote(noteId, newTitle, newContent) {
         const note = this.notes.find(note => note.id === noteId);
         if (note) {
@@ -594,6 +669,7 @@ class ProductivityApp {
         this.notes.forEach(note => {
             const li = document.createElement('li');
             li.classList.add('item');
+            if (note.isComplete) li.classList.add('completed');
 
             li.innerHTML = `
                 <div>
@@ -601,10 +677,16 @@ class ProductivityApp {
                     <p>${note.content}</p>
                 </div>
                 <div class="item-actions">
+                    <i class="fas fa-check complete-btn" data-id="${note.id}"></i>
                     <i class="fas fa-edit edit-btn" data-id="${note.id}"></i>
                     <i class="fas fa-trash delete-btn" data-id="${note.id}"></i>
                 </div>
             `;
+
+            // Complete Note Listener
+            li.querySelector('.complete-btn').addEventListener('click', () => 
+                this.toggleNoteCompletion(note.id)
+            );
 
             // Edit Note Listener
             li.querySelector('.edit-btn').addEventListener('click', () => {
@@ -642,6 +724,6 @@ document.addEventListener('DOMContentLoaded', () => {
         alert('An unexpected error occurred. Please try again.');
     });
 });
-    </script>
+</script>
 </body>
 </html>
